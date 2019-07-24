@@ -73,7 +73,7 @@ int main()
 	//BigRandTest();
 
 
-	FileTest();
+	//FileTest();
 	system("pause");
 	return 0;
 }
