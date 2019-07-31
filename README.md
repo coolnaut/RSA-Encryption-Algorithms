@@ -19,9 +19,9 @@
 
 项目是在VS2017开发，由于项目使用了boost库，所以需要引入boost库
 
+![Image text](https://github.com/Be-doing/RSA-Encryption-Algorithms/blob/master/Screenshot/Step1.png)
 
-
-![1564570594403](C:\Users\specture\AppData\Roaming\Typora\typora-user-images\1564570594403.png)
+![Image text](https://github.com/Be-doing/RSA-Encryption-Algorithms/blob/master/Screenshot/Step2.png)
 
 直接clone《RSA加密算法》，即可得到.hpp，在项目中包含本.hpp，在本库中clone与当前项目匹配的boost1_58版本，引入boost库后就可以使用。
 
