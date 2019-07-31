@@ -42,10 +42,11 @@ private:
 	bm::int1024_t ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pkey);
 	//产生大素数
 	bm::int1024_t ProducePrime();
+	//判断是否是素数
 	bool is_prime(bm::int1024_t prime);
 	//产生钥匙
 	void ProduceKeys();
-	bm::int1024_t Producenkey(bm::int1024_t prime1, bm::int1024_t prime2);
+	bm::int1024_t ProduceNkey(bm::int1024_t prime1, bm::int1024_t prime2);
 
 	bm::int1024_t ProduceOrla(bm::int1024_t prime1, bm::int1024_t prime2);
 

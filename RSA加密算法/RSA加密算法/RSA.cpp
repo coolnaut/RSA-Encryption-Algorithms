@@ -14,7 +14,7 @@ RSA::RSA()
 bm::int1024_t RSA::ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pkey)
 {
 	//加密公式为：ret = 信息^key%n
-	//TODO优化，快速幂取模
+	//DO优化，快速幂取模
 	//最终的结果为：ret = 信息^key%n == (A0 * A1 * A2 * …… * An)
 	bm::int1024_t retmsg = 1;
 	bm::int1024_t a = msg;
@@ -25,7 +25,6 @@ bm::int1024_t RSA::ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pk
 		{
 			//A0 == a----> A0 == a^2^0 %n ----> a%n%n == a% n
 			//A1 == A0 * A0 % n
-
 			//第1个信息位a%n
 			//第二个为 A0 * A1
 			//第n个则是 (A0 * A1 * A2 * …… *A(n - 1) *  An)
@@ -38,17 +37,14 @@ bm::int1024_t RSA::ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pk
 		a = (a * a) % c;
 	}
 	return retmsg;
-	//bm::int1024_t tmp = pow(msg, key) ;
-	//return tmp % pkey;
+
 }
 bm::int1024_t RSA::ProducePrime()
 {
 	br::mt19937 ran(time(nullptr));
-	br::uniform_int_distribution<bm::int1024_t> dist(1, bm::int1024_t(1) << 50);//TODO 随机大质数
+	br::uniform_int_distribution<bm::int1024_t> dist(1, bm::int1024_t(1) << 50);// 随机大数
 	while (1)
 	{
-		//std::cout << dist(ran) << std::endl;
-		//std::cout << "produce prime" << std::endl;
 		bm::int1024_t tmp = dist(ran);
 		if (is_prime(tmp))
 		{
@@ -56,11 +52,6 @@ bm::int1024_t RSA::ProducePrime()
 		}
 	}
 	return 0;
-	//bm::int1024_t primearr[] = { 2, 3,5 ,7,11, 13,17,19,23,29,31,37,41,43,47,53,59,61,67,71 };
-	//srand(time(nullptr));
-	//int t = rand() % (sizeof(primearr)/sizeof(bm::int1024_t) - 1);
-
-	//return primearr[t];
 }
 bool RSA::is_prime(bm::int1024_t prime)
 {
@@ -103,18 +94,19 @@ void RSA::ProduceKeys()
 
 	//std::cout << prime1 << std::endl;
 	//std::cout << prime2 << std::endl;
-	key_.nkey = Producenkey(prime1, prime2);
+	key_.nkey = ProduceNkey(prime1, prime2);
 
 	bm::int1024_t orla = ProduceOrla(prime1, prime2);
 	key_.ekey = ProduceEkey(orla);
 
 	key_.dkey = producedkey(key_.ekey, orla);
 }
-bm::int1024_t RSA::Producenkey(bm::int1024_t prime1, bm::int1024_t prime2)
+bm::int1024_t RSA::ProduceNkey(bm::int1024_t prime1, bm::int1024_t prime2)
 {
 	//选择两个不相等的质数p，q，得 n = pq
 	return prime1 * prime2;
 }
+
 bm::int1024_t RSA::ProduceOrla(bm::int1024_t prime1, bm::int1024_t prime2)
 {
 	//欧拉公式，f(n)
@@ -146,7 +138,6 @@ bm::int1024_t RSA::ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla)
 }
 bm::int1024_t RSA::ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla, bm::int1024_t& x, bm::int1024_t& y)
 {
-	//TODO 优化
 	//扩展的欧几里得算法
 	if (orla == 0)
 	{
@@ -163,27 +154,19 @@ bm::int1024_t RSA::ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla, bm::int102
 	//if (orla == 0) 
 	//	return ekey;
 	//return RSA::ProduceGcd(orla, ekey%orla);
-
-
 }
 bm::int1024_t RSA::producedkey(bm::int1024_t ekey, bm::int1024_t orla)
 {
 	//计算e与f(n)的逆元 D，得密钥(D, n)
 
+
 	//由扩展的欧几里得算法
 
 	bm::int1024_t dkey = 1;
 	bm::int1024_t Y = 3;
-	ProduceGcd(ekey, orla, dkey, Y);
+	bm::int1024_t tmp = ProduceGcd(ekey, orla, dkey, Y);
 	dkey = (dkey%orla + orla) % orla;
 	return dkey;
-	//bm::int1024_t D = orla / ekey;
-	//for (D; D < orla; ++D)
-	//{
-	//	if ((D*ekey) % orla == 1)
-	//		break;
-	//}
-	//return D;
 }
 
 
