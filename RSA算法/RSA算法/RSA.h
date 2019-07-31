@@ -4,22 +4,15 @@
 #include <vector>
 #include<time.h>
 #include<Windows.h>
-
-//boost库的大数
-#include <boost/multiprecision/cpp_int.hpp>
-#include <boost/multiprecision/random.hpp>
-#include <boost/multiprecision/miller_rabin.hpp>//素数
-
 #include<fstream>
-namespace bm = boost::multiprecision;
-namespace br = boost::random;
+
 struct Key
 {
 	//公钥(ekey, pkey): (e,n)
-	bm::int1024_t nkey;
-	bm::int1024_t ekey;
+	long nkey;
+	long ekey;
 	//私钥(dkey, pkey): (d, n)
-	bm::int1024_t dkey;
+	long dkey;
 };
 
 class RSA
@@ -28,26 +21,32 @@ public:
 	RSA();
 	Key GetKey();
 	void FileEcrept(const char* plain_file_in, const char* ecrept_file_out,
-		bm::int1024_t ekey, bm::int1024_t pkey);
+		long ekey, long pkey);
 	void FileDecrept(const char* ecrept_file_in, const char* plain_file_out,
-		bm::int1024_t dkey, bm::int1024_t pkey);
+		long dkey, long pkey);
 
-	std::vector<bm::int1024_t> Ecrept(std::string& str_in, bm::int1024_t ekey, bm::int1024_t pkey);
-	std::string Decrept(std::vector<bm::int1024_t>& ecrept_str, bm::int1024_t dkey, bm::int1024_t pkey);
+	std::vector<long> Ecrept(std::string& str_in, long ekey, long pkey);
+	std::string Decrept(std::vector<long>& ecrept_str, long dkey, long pkey);
 
-	void PrintInfo(std::vector<bm::int1024_t>& ecrept_str);
+	void PrintInfo(std::vector<long>& ecrept_str);
 private:
 	//加密与解密单个信息
-	bm::int1024_t ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pkey);
-	bm::int1024_t ProducePrime();
-	bool is_prime(bm::int1024_t prime);
+	long ecrept(long msg, long key, long pkey);
+	//产生素数
+	long ProducePrime();
+	//产生两把钥匙
 	void ProduceKeys();
-	bm::int1024_t Producenkey(bm::int1024_t prime1, bm::int1024_t prime2);
-	bm::int1024_t ProduceOrla(bm::int1024_t prime1, bm::int1024_t prime2);
-	bm::int1024_t ProduceEkey(bm::int1024_t orla);
-	bm::int1024_t ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla);
-	bm::int1024_t ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla,bm::int1024_t& x, bm::int1024_t& y);
-	bm::int1024_t producedkey(bm::int1024_t ekey, bm::int1024_t orla);
+	//产生n
+	long Producenkey(long prime1, long prime2);
+	//欧拉公式的运用
+	long ProduceOrla(long prime1, long prime2);
+	//求最大公约数
+	long ProduceGcd(long ekey, long orla);
+	//产生公钥
+	long ProduceEkey(long orla);
+
+	//产生私钥
+	long producedkey(long ekey, long orla);
 
 private:
 	Key key_;

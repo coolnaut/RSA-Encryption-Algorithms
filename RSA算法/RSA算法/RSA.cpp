@@ -11,14 +11,14 @@ RSA::RSA()
 }
 //加密与解密单个信息
 //这里只是密钥不同，函数则是相同的
-bm::int1024_t RSA::ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pkey)
+long RSA::ecrept(long msg, long key, long pkey)
 {
 	//加密公式为：ret = 信息^key%n
 	//TODO优化，快速幂取模
 	//最终的结果为：ret = 信息^key%n == (A0 * A1 * A2 * …… * An)
-	bm::int1024_t retmsg = 1;
-	bm::int1024_t a = msg;
-	bm::int1024_t c = pkey;
+	long retmsg = 1;
+	long a = msg;
+	long c = pkey;
 	while (key)
 	{
 		if (key & 1)//从第一个不是0的位开始乘
@@ -38,69 +38,40 @@ bm::int1024_t RSA::ecrept(bm::int1024_t msg, bm::int1024_t key, bm::int1024_t pk
 		a = (a * a) % c;
 	}
 	return retmsg;
-	//bm::int1024_t tmp = pow(msg, key) ;
+	//long tmp = pow(msg, key) ;
 	//return tmp % pkey;
 }
-bm::int1024_t RSA::ProducePrime()
+long RSA::ProducePrime()
 {
-	br::mt19937 ran(time(nullptr));
-	br::uniform_int_distribution<bm::int1024_t> dist(1, bm::int1024_t(1) << 50);//TODO 随机大质数
-	while (1)
-	{
-		//std::cout << dist(ran) << std::endl;
-		//std::cout << "produce prime" << std::endl;
-		bm::int1024_t tmp = dist(ran);
-		if (is_prime(tmp))
-		{
-			return tmp;
-		}
-	}
-	return 0;
-	//bm::int1024_t primearr[] = { 2, 3,5 ,7,11, 13,17,19,23,29,31,37,41,43,47,53,59,61,67,71 };
-	//srand(time(nullptr));
-	//int t = rand() % (sizeof(primearr)/sizeof(bm::int1024_t) - 1);
+	//弄一个简单的素数表。
+	long primearr[] = { 2, 3,5 ,7,11, 13,17,19,23,29,31,37,41,43,47,53,59,61,67,71 };
+	srand(time(nullptr));
+	int t = rand() % (sizeof(primearr)/sizeof(long) - 1);
 
-	//return primearr[t];
+	return primearr[t];
 }
-bool RSA::is_prime(bm::int1024_t prime)
-{
-	//std::cout << "is prime" << std::endl;
-	br::mt11213b gen(time(nullptr));
-	if (miller_rabin_test(prime, 25, gen))
-	{
-		if (miller_rabin_test((prime - 1) / 2, 25, gen))
-		{
-			return true;
-		}
-	}
-	return false;
-}
+
 void RSA::ProduceKeys()
 {
-	bm::int1024_t prime1 = ProducePrime();
-
-	bm::int1024_t prime2 = ProducePrime();
+	long prime1 = ProducePrime();
+	long prime2 = ProducePrime();
 	while (prime1 == prime2)
 	{
-		//Sleep(1000);
 		prime2 = ProducePrime();
 	}
-
-	std::cout << prime1 << std::endl;
-	std::cout << prime2 << std::endl;
 	key_.nkey = Producenkey(prime1, prime2);
 
-	bm::int1024_t orla = ProduceOrla(prime1, prime2);
+	long orla = ProduceOrla(prime1, prime2);
 	key_.ekey = ProduceEkey(orla);
 
 	key_.dkey = producedkey(key_.ekey, orla);
 }
-bm::int1024_t RSA::Producenkey(bm::int1024_t prime1, bm::int1024_t prime2)
+long RSA::Producenkey(long prime1, long prime2)
 {
 	//选择两个不相等的质数p，q，得 n = pq
 	return prime1 * prime2;
 }
-bm::int1024_t RSA::ProduceOrla(bm::int1024_t prime1, bm::int1024_t prime2)
+long RSA::ProduceOrla(long prime1, long prime2)
 {
 	//欧拉公式，f(n)
 	//如果a是制数：f(n) = n - 1
@@ -109,11 +80,18 @@ bm::int1024_t RSA::ProduceOrla(bm::int1024_t prime1, bm::int1024_t prime2)
 	return (prime1 - 1)*(prime2 - 1);
 }
 
+long RSA::ProduceGcd(long ekey, long orla)
+{
+	if (orla == 0)
+		return ekey;
 
-bm::int1024_t RSA::ProduceEkey(bm::int1024_t orla)
+	return RSA::ProduceGcd(orla, ekey%orla);
+}
+long RSA::ProduceEkey(long orla)
 {
 	//得到f(n)，选择一个1 < E < f(n)，且E与n互质，得公钥(E, n)
-	bm::int1024_t i = 2;
+	//公约数为 1 的两个数是互质的，因此暴力搜索。一个E出来即可。
+	long i = 2;
 	for ( i; i < orla; ++i)
 	{
 		if (ProduceGcd(i, orla) == 1)
@@ -122,58 +100,18 @@ bm::int1024_t RSA::ProduceEkey(bm::int1024_t orla)
 	return i;
 }
 
-bm::int1024_t RSA::ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla)
-{
-	if (orla == 0) 
-	return ekey;
 
-	return RSA::ProduceGcd(orla, ekey%orla);
-}
-bm::int1024_t RSA::ProduceGcd(bm::int1024_t ekey, bm::int1024_t orla, bm::int1024_t& x, bm::int1024_t& y)
+long RSA::producedkey(long ekey, long orla)
 {
-	//TODO 优化
-	//扩展的欧几里得算法
-	if (orla == 0)
+
+	long D = orla / ekey;
+	for (D; D < orla; ++D)
 	{
-		x = 1;
-		y = 0;
-		return ekey;
+		if ((D*ekey) % orla == 1)
+			break;
 	}
-	bm::int1024_t ret = ProduceGcd(orla, ekey%orla, x, y);
-	bm::int1024_t tmpx = x;
-	bm::int1024_t tmpy = y;
-	x = tmpy;
-	y = tmpx - (ekey / orla)*tmpy;
-	return ret;
-	//if (orla == 0) 
-	//	return ekey;
-	//return RSA::ProduceGcd(orla, ekey%orla);
-
-
+	return D;
 }
-bm::int1024_t RSA::producedkey(bm::int1024_t ekey, bm::int1024_t orla)
-{
-	//计算e与f(n)的逆元 D，得密钥(D, n)
-
-	//由扩展的欧几里得算法
-
-	bm::int1024_t dkey = 1;
-	bm::int1024_t Y = 3;
-	ProduceGcd(ekey, orla, dkey, Y);
-	dkey = (dkey%orla + orla) % orla;
-	return dkey;
-	//bm::int1024_t D = orla / ekey;
-	//for (D; D < orla; ++D)
-	//{
-	//	if ((D*ekey) % orla == 1)
-	//		break;
-	//}
-	//return D;
-}
-
-
-
-
 
 
 //加密过程############################
@@ -182,16 +120,16 @@ Key RSA::GetKey()
 {
 		return key_;
 }
-std::vector<bm::int1024_t> RSA::Ecrept(std::string& str_in, bm::int1024_t ekey, bm::int1024_t pkey)
+std::vector<long> RSA::Ecrept(std::string& str_in, long ekey, long pkey)
 {
-	std::vector<bm::int1024_t> retv;
+	std::vector<long> retv;
 	for (size_t i = 0; i < str_in.size(); ++i)
 	{
 		retv.push_back(ecrept(str_in[i], ekey, pkey));
 	}
 	return retv;
 }
-std::string RSA::Decrept(std::vector<bm::int1024_t>& ecrept_str, bm::int1024_t dkey, bm::int1024_t pkey)
+std::string RSA::Decrept(std::vector<long>& ecrept_str, long dkey, long pkey)
 {
 	std::string retstr;
 	for (size_t i = 0; i < ecrept_str.size(); ++i)
@@ -208,7 +146,7 @@ std::string RSA::Decrept(std::vector<bm::int1024_t>& ecrept_str, bm::int1024_t d
 const int NUM = 256;//每次读256字节
 
 void RSA::FileEcrept(const char* plain_file_in, const char* ecrept_file_out,
-	bm::int1024_t ekey, bm::int1024_t pkey)
+	long ekey, long pkey)
 {
 	std::ifstream file_in(plain_file_in, std::ios::binary);
 	std::ofstream file_out(ecrept_file_out, std::ios::binary | std::ios::app);
@@ -219,7 +157,7 @@ void RSA::FileEcrept(const char* plain_file_in, const char* ecrept_file_out,
 		return;
 	}
 	char buff_in[NUM];
-	bm::int1024_t buff_out[NUM];
+	long buff_out[NUM];
 	int curnum;//当前读取的字节
 	while (!file_in.eof())
 	{
@@ -227,16 +165,16 @@ void RSA::FileEcrept(const char* plain_file_in, const char* ecrept_file_out,
 		curnum = file_in.gcount();
 		for (int i = 0; i < curnum; ++i)
 		{
-			buff_out[i] = ecrept((bm::int1024_t)buff_in[i], ekey, pkey);
+			buff_out[i] = ecrept((long)buff_in[i], ekey, pkey);
 		}
-		file_out.write((char*)buff_out, curnum * sizeof(bm::int1024_t));
+		file_out.write((char*)buff_out, curnum * sizeof(long));
 	}
 
 	file_in.close();
 	file_out.close();
 }
 void RSA::FileDecrept(const char* ecrept_file_in, const char* plain_file_out,
-	bm::int1024_t dkey, bm::int1024_t pkey)
+	long dkey, long pkey)
 {
 	std::ifstream file_in(ecrept_file_in , std::ios::binary);
 	std::ofstream file_out(plain_file_out, std::ios::binary | std::ios::app);
@@ -246,14 +184,14 @@ void RSA::FileDecrept(const char* ecrept_file_in, const char* plain_file_out,
 		std::cout << "open error" << std::endl;
 		return;
 	}
-	bm::int1024_t buff_in[NUM];
+	long buff_in[NUM];
 	char buff_out[NUM];
 	int curnum;//当前读取的字节
 	while (!file_in.eof())
 	{
-		file_in.read((char*)buff_in, NUM * sizeof(bm::int1024_t));
+		file_in.read((char*)buff_in, NUM * sizeof(long));
 		curnum = file_in.gcount();
-		curnum /= sizeof(bm::int1024_t);
+		curnum /= sizeof(long);
 		for (int i = 0; i < curnum; ++i)
 		{
 			buff_out[i] = (char)ecrept(buff_in[i], dkey, pkey);
@@ -264,7 +202,7 @@ void RSA::FileDecrept(const char* ecrept_file_in, const char* plain_file_out,
 	file_in.close();
 	file_out.close();
 }
-void RSA::PrintInfo(std::vector<bm::int1024_t>& ecrept_str)
+void RSA::PrintInfo(std::vector<long>& ecrept_str)
 {
 	for (const auto e : ecrept_str)
 	{
