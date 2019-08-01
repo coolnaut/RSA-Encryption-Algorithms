@@ -4,7 +4,7 @@
 #include <vector>
 #include<time.h>
 #include<fstream>
-//#include<Windows.h>
+
 
 //boost¿âµÄ´óÊý
 #include <boost/multiprecision/cpp_int.hpp>
