@@ -24,6 +24,7 @@
 ![Image text](https://github.com/Be-doing/RSA-Encryption-Algorithms/blob/master/Screenshot/Step2.png)
 
 直接clone《RSA加密算法》，即可得到.hpp，在项目中包含本.hpp，在本库中clone与当前项目匹配的boost1_58版本，引入boost库后就可以使用。
+可以直接只用其中的消息接口实现HTTP等加密，也可使用其文件加密，为自己的机密文件加密，`注意保存好钥匙`
 
 ### Demo
 
@@ -49,7 +50,7 @@ void FileTest()
 {
 	RSA rsa;
 	std::string filenameIn, fileecreptOut, filedcreptOut;
-	filenameIn = "file.jpg";//记得要有一个文件名为file.jpg的文件。
+	filenameIn = "file.jpg";//加密文件必须存在哦
 	fileecreptOut += "ecrept.txt";
 	filedcreptOut += "dcrept.jpg";
 	rsa.FileEcrept(filenameIn.c_str(), fileecreptOut.c_str(), rsa.GetKey().ekey, rsa.GetKey().nkey);
